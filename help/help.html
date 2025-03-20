@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Expander Help</title>
+  <style>
+    :root {
+      --primary-color: #6200ee;
+      --primary-light: #9747ff;
+      --primary-dark: #3700b3;
+      --secondary-color: #03dac6;
+      --surface-color: #ffffff;
+      --background-color: #f5f5f5;
+      --error-color: #b00020;
+      --text-primary: rgba(0, 0, 0, 0.87);
+      --text-secondary: rgba(0, 0, 0, 0.6);
+      --text-hint: rgba(0, 0, 0, 0.38);
+      --border-color: rgba(0, 0, 0, 0.12);
+      
+      --shadow-1: 0 2px 4px rgba(0, 0, 0, 0.14);
+      --shadow-2: 0 3px 6px rgba(0, 0, 0, 0.16);
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --radius: 8px;
+      --radius-sm: 4px;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      color: var(--text-primary);
+      background-color: var(--background-color);
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: var(--spacing-md);
+    }
+    
+    header {
+      margin-bottom: var(--spacing-lg);
+      text-align: center;
+      padding: var(--spacing-lg) 0;
+    }
+    
+    h1 {
+      color: var(--primary-color);
+      margin-bottom: var(--spacing-xs);
+      font-size: 28px;
+      font-weight: 500;
+    }
+    
+    h2 {
+      color: var(--primary-color);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: var(--spacing-xs);
+      margin-top: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+      font-size: 22px;
+      font-weight: 500;
+    }
+    
+    h3 {
+      margin-top: var(--spacing-lg);
+      margin-bottom: var(--spacing-sm);
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    
+    p {
+      margin-bottom: var(--spacing-md);
+      color: var(--text-primary);
+    }
+    
+    .help-section {
+      margin-bottom: var(--spacing-xl);
+    }
+    
+    .card {
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+      background-color: var(--surface-color);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-1);
+      transition: box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+      box-shadow: var(--shadow-2);
+    }
+    
+    .code-example {
+      background-color: rgba(0, 0, 0, 0.04);
+      padding: var(--spacing-md);
+      border-radius: var(--radius-sm);
+      font-family: monospace;
+      margin: var(--spacing-md) 0;
+    }
+    
+    code {
+      background-color: rgba(0, 0, 0, 0.04);
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+    
+    .variable-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: var(--spacing-md) 0;
+    }
+    
+    .variable-table th, .variable-table td {
+      border: 1px solid var(--border-color);
+      padding: var(--spacing-sm) var(--spacing-md);
+      text-align: left;
+    }
+    
+    .variable-table th {
+      background-color: rgba(0, 0, 0, 0.04);
+      font-weight: 500;
+    }
+    
+    ol, ul {
+      padding-left: var(--spacing-xl);
+      margin-bottom: var(--spacing-md);
+    }
+    
+    li {
+      margin-bottom: var(--spacing-xs);
+      color: var(--text-primary);
+    }
+    
+    .button {
+      display: inline-block;
+      padding: 8px var(--spacing-md);
+      background-color: var(--primary-color);
+      color: white;
+      text-decoration: none;
+      border-radius: 18px;
+      font-weight: 500;
+      margin-top: var(--spacing-md);
+      box-shadow: var(--shadow-1);
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .button:hover {
+      background-color: var(--primary-light);
+      box-shadow: var(--shadow-2);
+    }
+    
+    footer {
+      text-align: center;
+      margin-top: var(--spacing-xl);
+      color: var(--text-secondary);
+      padding-bottom: var(--spacing-xl);
+    }
+    
+    @media (max-width: 600px) {
+      .container {
+        padding: var(--spacing-sm);
+      }
+      
+      .card {
+        padding: var(--spacing-sm);
+      }
+      
+      .variable-table th, .variable-table td {
+        padding: var(--spacing-xs);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Text Expander Help</h1>
+      <p>Learn how to use the Chrome Text Expander extension</p>
+    </header>
+    
+    <div class="help-section">
+      <h2>Getting Started</h2>
+      <div class="card">
+        <h3>How It Works</h3>
+        <p>Text Expander allows you to type short abbreviations that automatically expand into longer text. For example, you can type <code>sig:</code> and it will automatically expand to your full signature.</p>
+        
+        <h3>Creating Your First Snippet</h3>
+        <ol>
+          <li>Click the Text Expander icon in your Chrome toolbar</li>
+          <li>Click "Add New" button</li>
+          <li>Enter a shortcut (e.g., "sig")</li>
+          <li>Enter the text you want it to expand to</li>
+          <li>Optionally assign a category</li>
+          <li>Click "Save"</li>
+        </ol>
+        
+        <h3>Using Snippets</h3>
+        <p>To use a snippet, simply type its shortcut followed by the trigger character (default is <code>:</code>) in any text field. The shortcut will be immediately replaced with your expanded text.</p>
+        
+        <div class="code-example">
+          Type: <strong>sig:</strong><br>
+          Gets replaced with: <strong>Best regards,<br>Your Name</strong>
+        </div>
+      </div>
+    </div>
+    
+    <div class="help-section">
+      <h2>Advanced Features</h2>
+      <div class="card">
+        <h3>Customizing the Trigger Character</h3>
+        <p>You can change the trigger character (default is <code>:</code>) in the extension settings:</p>
+        <ol>
+          <li>Click the gear icon in the Text Expander popup (or right-click the extension icon and select "Options")</li>
+          <li>In the "Trigger character" field, enter your preferred character</li>
+          <li>Click "Save Settings"</li>
+        </ol>
+        <p>For example, if you change the trigger character to <code>;</code>, you would type <code>sig;</code> to expand your signature.</p>
+        
+        <h3>Using Variables</h3>
+        <p>You can include special variables in your snippets that will be replaced with dynamic content:</p>
+        
+        <table class="variable-table">
+          <tr>
+            <th>Variable</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+          <tr>
+            <td><code>%DATE%</code></td>
+            <td>Current date</td>
+            <td>3/20/2025</td>
+          </tr>
+          <tr>
+            <td><code>%TIME%</code></td>
+            <td>Current time</td>
+            <td>2:30 PM</td>
+          </tr>
+          <tr>
+            <td><code>%DATETIME%</code></td>
+            <td>Current date and time</td>
+            <td>3/20/2025, 2:30 PM</td>
+          </tr>
+          <tr>
+            <td><code>%CLIPBOARD%</code></td>
+            <td>Current clipboard content</td>
+            <td>[Whatever is in your clipboard]</td>
+          </tr>
+          <tr>
+            <td><code>%CURSOR%</code></td>
+            <td>Where cursor should be placed after expansion</td>
+            <td>N/A</td>
+          </tr>
+        </table>
+        
+        <h3>Organizing Snippets</h3>
+        <p>You can organize your snippets using categories. To filter snippets by category, use the dropdown menu at the top of the popup.</p>
+        
+        <h3>Importing and Exporting</h3>
+        <p>You can backup your snippets by clicking the "Export" button, which saves them as a JSON file. To restore your snippets or transfer them to another computer, use the "Import" button.</p>
+      </div>
+    </div>
+    
+    <div class="help-section">
+      <h2>Troubleshooting</h2>
+      <div class="card">
+        <h3>Snippets Not Expanding</h3>
+        <ul>
+          <li>Make sure the extension is enabled in your settings</li>
+          <li>Try refreshing the page</li>
+          <li>Check that you're typing the correct shortcut followed by your trigger character</li>
+          <li>Some websites may block content scripts - try a different site</li>
+        </ul>
+        
+        <h3>Other Issues</h3>
+        <p>If you encounter any other issues, try these steps:</p>
+        <ol>
+          <li>Disable and re-enable the extension</li>
+          <li>Check for conflicts with other extensions</li>
+          <li>Clear your browser cache</li>
+          <li>Reinstall the extension</li>
+        </ol>
+      </div>
+    </div>
+    
+    <div class="help-section">
+      <h2>Privacy</h2>
+      <div class="card">
+        <p>Text Expander respects your privacy:</p>
+        <ul>
+          <li>All snippets are stored locally in your browser</li>
+          <li>No data is sent to any server</li>
+          <li>Your snippets are only accessible by you</li>
+          <li>The extension only requires minimal permissions to function</li>
+        </ul>
+        
+        <a href="../options/options.html" class="button">
+          Go to Settings
+        </a>
+      </div>
+    </div>
+    
+    <footer>
+      <p>Simple Text Expander v1.0</p>
+      <p>If you need further assistance, please contact support.</p>
+    </footer>
+  </div>
+</body>
+</html>

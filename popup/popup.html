@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Text Expander</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="top-app-bar">
+      <div class="top-app-bar-title">Text Expander</div>
+      <button class="button button-primary" id="addSnippetBtn">
+        <span class="icon-add"></span>
+        <span>Add New</span>
+      </button>
+    </header>
+
+    <main class="main-content">
+      <!-- Category filter -->
+      <div class="category-filter">
+        <div class="select-container">
+          <select id="categorySelect">
+            <option value="all" selected>All Categories</option>
+            <!-- Categories will be added here dynamically -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Snippets list -->
+      <div class="snippets-container">
+        <ul class="snippet-list" id="snippetsList">
+          <!-- Snippets will be added here dynamically -->
+        </ul>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-state-icon icon-folder"></div>
+        <p>No snippets found. Get started by adding your first snippet!</p>
+        <button class="button button-primary" id="addFirstSnippetBtn">
+          <span class="icon-add"></span>
+          <span>Add Your First Snippet</span>
+        </button>
+      </div>
+    </main>
+
+    <footer>
+      <div class="footer-actions">
+        <button class="button button-secondary" id="importBtn">
+          <span class="icon-upload"></span>
+          <span>Import</span>
+        </button>
+        <button class="button button-secondary" id="exportBtn">
+          <span class="icon-download"></span>
+          <span>Export</span>
+        </button>
+        <button class="button button-secondary" id="settingsBtn">
+          <span class="icon-settings"></span>
+          <span>Settings</span>
+        </button>
+      </div>
+    </footer>
+
+    <!-- Add/Edit Snippet Dialog -->
+    <div class="dialog-container" id="snippetDialog">
+      <div class="dialog">
+        <div class="dialog-title">Add New Snippet</div>
+        <div class="dialog-content">
+          <form id="snippetForm">
+            <div class="form-group">
+              <label class="form-label" for="shortcut">Shortcut</label>
+              <input class="form-input" type="text" id="shortcut" required>
+              <div class="form-helper">Will expand when you type <span id="shortcutPreview">shortcut:</span></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="snippetText">Expanded Text</label>
+              <textarea class="form-textarea" id="snippetText" rows="6" required></textarea>
+            </div>
+
+            <div class="variables-helper">
+              <span>Variables:</span>
+              <button type="button" class="button variable-btn" data-variable="%DATE%">Date</button>
+              <button type="button" class="button variable-btn" data-variable="%TIME%">Time</button>
+              <button type="button" class="button variable-btn" data-variable="%CLIPBOARD%">Clipboard</button>
+              <button type="button" class="button variable-btn" data-variable="%CURSOR%">Cursor</button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="category">Category (optional)</label>
+              <input class="form-input" type="text" id="category">
+            </div>
+            
+            <input type="hidden" id="snippetId">
+          </form>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" class="button button-secondary" id="cancelBtn">Cancel</button>
+          <button type="button" class="button button-primary" id="saveSnippetBtn">
+            <span class="icon-save"></span>
+            <span>Save</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import file input (hidden) -->
+    <input type="file" id="importFileInput" accept=".json" style="display: none;">
+
+    <!-- Delete Confirmation Dialog -->
+    <div class="dialog-container" id="deleteDialog">
+      <div class="dialog">
+        <div class="dialog-title">Confirm Delete</div>
+        <div class="dialog-content">
+          Are you sure you want to delete this snippet?
+        </div>
+        <div class="dialog-actions">
+          <button type="button" class="button button-secondary" id="cancelDeleteBtn">Cancel</button>
+          <button type="button" class="button button-primary" id="confirmDeleteBtn">
+            <span class="icon-delete"></span>
+            <span>Delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../storage.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

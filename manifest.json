@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Simple Text Expander",
+  "version": "1.0",
+  "description": "A simple text expander with Material Design",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_width": 350,
+    "default_height": 500
+  },
+  "options_page": "options/options.html",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "clipboardRead"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["help/help.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

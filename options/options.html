@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Expander Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <header class="top-app-bar">
+      <div class="top-app-bar-title">Text Expander Settings</div>
+    </header>
+
+    <main class="main-content">
+      <div class="settings-card">
+        <h2>General Settings</h2>
+        
+        <div class="form-field">
+          <label class="switch">
+            <input type="checkbox" id="enableExtension" checked>
+            <span class="slider"></span>
+          </label>
+          <label for="enableExtension">Enable text expansion</label>
+        </div>
+        
+        <div class="form-field trigger-field">
+          <label for="triggerChar">Trigger character:</label>
+          <input type="text" id="triggerChar" class="form-input trigger-input" maxlength="1" value=":" placeholder=":">
+          <div class="form-helper">Character typed after shortcut to trigger expansion</div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h2>About</h2>
+        <p>Simple Text Expander v1.0</p>
+        <p>A lightweight, Material Design text expander for Chrome.</p>
+        
+        <div style="margin-top: 20px;">
+          <a href="../help/help.html" target="_blank" class="button button-secondary">
+            <span class="icon-help"></span>
+            <span>Help & Documentation</span>
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <button class="button button-primary" id="saveSettingsBtn">
+        <span class="icon-save"></span>
+        <span>Save Settings</span>
+      </button>
+    </footer>
+    
+    <!-- Snackbar for notifications -->
+    <div class="snackbar" id="snackbar">Settings saved successfully</div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
