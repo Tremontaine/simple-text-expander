@@ -2,6 +2,8 @@
 
 A lightweight, Material Design text expander Chrome extension that follows the KISS (Keep It Simple, Stupid) principle.
 
+![Screenshot](simple-text-expander.png)
+
 ## Features
 
 - Type a shortcut followed by a trigger character (default is `:`) to expand text
