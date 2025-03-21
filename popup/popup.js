@@ -297,23 +297,142 @@ function updateShortcutPreview() {
   });
 }
 
-// Export snippets
+// Export snippets with manual copy method for maximum browser compatibility
 function exportSnippets() {
   chrome.storage.local.get('snippets', (result) => {
     const snippets = result.snippets || [];
     
-    // Create a JSON blob
-    const blob = new Blob([JSON.stringify(snippets, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
+    // Create the JSON string with pretty formatting
+    const jsonString = JSON.stringify(snippets, null, 2);
     
-    // Create a link and click it
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'text-expander-snippets.json';
-    a.click();
+    // Create a modal dialog for the user to copy from
+    const modalContainer = document.createElement('div');
+    modalContainer.style.position = 'fixed';
+    modalContainer.style.top = '0';
+    modalContainer.style.left = '0';
+    modalContainer.style.width = '100%';
+    modalContainer.style.height = '100%';
+    modalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    modalContainer.style.zIndex = '10000';
+    modalContainer.style.display = 'flex';
+    modalContainer.style.justifyContent = 'center';
+    modalContainer.style.alignItems = 'center';
     
-    // Clean up
-    URL.revokeObjectURL(url);
+    // Create the modal content
+    const modalContent = document.createElement('div');
+    modalContent.style.backgroundColor = '#ffffff';
+    modalContent.style.borderRadius = '8px';
+    modalContent.style.width = '80%';
+    modalContent.style.maxWidth = '600px';
+    modalContent.style.maxHeight = '80%';
+    modalContent.style.padding = '20px';
+    modalContent.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+    modalContent.style.display = 'flex';
+    modalContent.style.flexDirection = 'column';
+    
+    // Add header
+    const header = document.createElement('div');
+    header.style.marginBottom = '15px';
+    header.innerHTML = `
+      <h3 style="margin: 0 0 10px 0; color: #6200ee; font-size: 18px;">Export Snippets</h3>
+      <p style="margin: 0; color: rgba(0, 0, 0, 0.6);">Copy this JSON data and save it to a file named "text-expander-snippets.json":</p>
+    `;
+    
+    // Add text area with the JSON content
+    const textArea = document.createElement('textarea');
+    textArea.value = jsonString;
+    textArea.style.width = '100%';
+    textArea.style.height = '200px';
+    textArea.style.marginBottom = '15px';
+    textArea.style.padding = '10px';
+    textArea.style.border = '1px solid rgba(0, 0, 0, 0.12)';
+    textArea.style.borderRadius = '4px';
+    textArea.style.fontFamily = 'monospace';
+    textArea.style.fontSize = '12px';
+    textArea.readOnly = true;
+    
+    // Add buttons
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.justifyContent = 'space-between';
+    
+    const selectAllButton = document.createElement('button');
+    selectAllButton.textContent = 'Select All';
+    selectAllButton.style.padding = '8px 16px';
+    selectAllButton.style.backgroundColor = '#6200ee';
+    selectAllButton.style.color = 'white';
+    selectAllButton.style.border = 'none';
+    selectAllButton.style.borderRadius = '18px';
+    selectAllButton.style.fontWeight = '500';
+    selectAllButton.style.cursor = 'pointer';
+    
+    const copyButton = document.createElement('button');
+    copyButton.textContent = 'Copy to Clipboard';
+    copyButton.style.padding = '8px 16px';
+    copyButton.style.backgroundColor = '#6200ee';
+    copyButton.style.color = 'white';
+    copyButton.style.border = 'none';
+    copyButton.style.borderRadius = '18px';
+    copyButton.style.fontWeight = '500';
+    copyButton.style.cursor = 'pointer';
+    
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Close';
+    closeButton.style.padding = '8px 16px';
+    closeButton.style.backgroundColor = 'transparent';
+    closeButton.style.color = '#6200ee';
+    closeButton.style.border = '1px solid #6200ee';
+    closeButton.style.borderRadius = '18px';
+    closeButton.style.fontWeight = '500';
+    closeButton.style.cursor = 'pointer';
+    
+    // Status message
+    const statusMessage = document.createElement('div');
+    statusMessage.style.marginTop = '10px';
+    statusMessage.style.textAlign = 'center';
+    statusMessage.style.color = '#4CAF50';
+    statusMessage.style.fontWeight = '500';
+    statusMessage.style.opacity = '0';
+    statusMessage.style.transition = 'opacity 0.3s';
+    
+    // Add event listeners
+    selectAllButton.addEventListener('click', () => {
+      textArea.select();
+    });
+    
+    copyButton.addEventListener('click', () => {
+      textArea.select();
+      document.execCommand('copy');
+      statusMessage.textContent = 'Copied to clipboard!';
+      statusMessage.style.opacity = '1';
+      setTimeout(() => {
+        statusMessage.style.opacity = '0';
+      }, 2000);
+    });
+    
+    closeButton.addEventListener('click', () => {
+      document.body.removeChild(modalContainer);
+    });
+    
+    // Assemble the modal
+    buttonContainer.appendChild(selectAllButton);
+    buttonContainer.appendChild(copyButton);
+    buttonContainer.appendChild(closeButton);
+    
+    modalContent.appendChild(header);
+    modalContent.appendChild(textArea);
+    modalContent.appendChild(buttonContainer);
+    modalContent.appendChild(statusMessage);
+    
+    modalContainer.appendChild(modalContent);
+    
+    // Add to document
+    document.body.appendChild(modalContainer);
+    
+    // Auto-select text for convenience
+    setTimeout(() => {
+      textArea.select();
+    }, 100);
   });
 }
 
@@ -395,12 +514,10 @@ function setupEventListeners() {
     }
   });
   
-  // Export snippets
-  document.getElementById('exportBtn').addEventListener('click', exportSnippets);
-  
-  // Import snippets
-  document.getElementById('importBtn').addEventListener('click', importSnippets);
-  document.getElementById('importFileInput').addEventListener('change', handleFileSelect);
+  // Open config backup/restore dialog
+  document.getElementById('configBtn').addEventListener('click', function() {
+  showConfigBackupDialog();
+  });
   
   // Open settings
   document.getElementById('settingsBtn').addEventListener('click', function() {

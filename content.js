@@ -31,34 +31,126 @@ chrome.storage.onChanged.addListener((changes, area) => {
   }
 });
 
+// Get clipboard content using various methods
+async function getClipboardContent() {
+  // Method 1: Try the Clipboard API directly (most modern browsers)
+  try {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      return await navigator.clipboard.readText();
+    }
+  } catch (err) {
+    console.log('Clipboard API failed:', err);
+  }
+
+  // Method 2: Try execCommand (older browsers)
+  try {
+    const textarea = document.createElement('textarea');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '0';
+    textarea.style.left = '0';
+    textarea.style.width = '1px';
+    textarea.style.height = '1px';
+    textarea.style.padding = '0';
+    textarea.style.border = 'none';
+    textarea.style.outline = 'none';
+    textarea.style.boxShadow = 'none';
+    textarea.style.background = 'transparent';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    
+    const successful = document.execCommand('paste');
+    if (successful) {
+      const text = textarea.value;
+      document.body.removeChild(textarea);
+      return text;
+    }
+    document.body.removeChild(textarea);
+  } catch (err) {
+    console.log('execCommand paste failed:', err);
+  }
+
+  // Method 3: Try the background script (might work in extensions)
+  try {
+    const response = await new Promise((resolve) => {
+      chrome.runtime.sendMessage({action: 'getClipboard'}, (response) => {
+        if (chrome.runtime.lastError) {
+          resolve({ error: chrome.runtime.lastError });
+        } else {
+          resolve(response);
+        }
+      });
+    });
+    
+    if (response && response.clipboardContent !== undefined) {
+      return response.clipboardContent;
+    }
+  } catch (err) {
+    console.log('Background script clipboard access failed:', err);
+  }
+
+  // Method 4: Try using a contentEditable div (alternative for some browsers)
+  try {
+    const div = document.createElement('div');
+    div.contentEditable = true;
+    div.style.position = 'fixed';
+    div.style.left = '-999px';
+    document.body.appendChild(div);
+    div.focus();
+    
+    document.execCommand('paste');
+    const text = div.innerText;
+    document.body.removeChild(div);
+    
+    if (text) {
+      return text;
+    }
+  } catch (err) {
+    console.log('contentEditable paste failed:', err);
+  }
+  
+  // If all methods fail, return a placeholder
+  return "[Clipboard access requires permission. Try using %CLIPBOARD% in a page where clipboard access is allowed.]";
+}
+
 // Process special variables in the text
 async function processVariables(text) {
+  // Handle date and time variables with 24-hour time format
   const now = new Date();
   
-  // Replace %DATE% with current date
-  text = text.replace(/%DATE%/g, now.toLocaleDateString());
+  // Format functions for date and time to ensure consistency
+  const formatDate = (date) => {
+    const options = { year: 'numeric', month: 'numeric', day: 'numeric' };
+    return date.toLocaleDateString(undefined, options);
+  };
   
-  // Replace %TIME% with current time
-  text = text.replace(/%TIME%/g, now.toLocaleTimeString());
+  const formatTime = (date) => {
+    // 24-hour time format
+    const options = { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false };
+    return date.toLocaleTimeString(undefined, options);
+  };
   
-  // Replace %DATETIME% with current date and time
-  text = text.replace(/%DATETIME%/g, now.toLocaleString());
+  const formatDateTime = (date) => {
+    // 24-hour time format
+    const options = { 
+      year: 'numeric', month: 'numeric', day: 'numeric',
+      hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false 
+    };
+    return date.toLocaleString(undefined, options);
+  };
   
-  // Handle clipboard
+  // Replace date and time variables
+  text = text.replace(/%DATE%/g, formatDate(now));
+  text = text.replace(/%TIME%/g, formatTime(now));
+  text = text.replace(/%DATETIME%/g, formatDateTime(now));
+  
+  // Handle clipboard with improved multi-method approach
   if (text.includes('%CLIPBOARD%')) {
     try {
-      // Get clipboard content asynchronously
-      const response = await new Promise((resolve) => {
-        chrome.runtime.sendMessage({action: 'getClipboard'}, response => {
-          resolve(response);
-        });
-      });
-      
-      if (response && response.clipboardContent) {
-        text = text.replace(/%CLIPBOARD%/g, response.clipboardContent);
-      }
+      const clipboardContent = await getClipboardContent();
+      text = text.replace(/%CLIPBOARD%/g, clipboardContent);
     } catch (error) {
-      console.error('Error getting clipboard content:', error);
+      console.error('All clipboard access methods failed:', error);
+      text = text.replace(/%CLIPBOARD%/g, '[Clipboard access failed]');
     }
   }
   
@@ -142,30 +234,36 @@ async function handleInput(event) {
       // Prevent default only if we have a matching expansion
       event.preventDefault();
       
-      // Calculate the start position to replace
-      const startPos = cursorPos - shortcutCandidate.length - 1;
+      // Calculate the start position to replace - FIXED CALCULATION
+      const startPos = cursorPos - shortcutCandidate.length - TRIGGER_CHAR.length;
+      const exactStartPos = startPos + 1; // Add 1 to correct the off-by-one error
       
       if (element.value !== undefined) {
         // Handle standard input elements
         // Get the text before and after the shortcut
-        const beforeText = element.value.substring(0, startPos);
+        const beforeText = element.value.substring(0, exactStartPos);
         const afterText = element.value.substring(cursorPos);
         
         // Process the expansion for cursor positioning
         const { text, cursorOffset } = processCursorVariable(expansion);
         
-        // Replace the shortcut with the expanded text
-        element.value = beforeText + text + afterText;
+        // Create the new value and store its length before applying
+        const newValue = beforeText + text + afterText;
+        const newValueLength = newValue.length;
         
-        // Set the cursor position
+        // Replace the shortcut with the expanded text
+        element.value = newValue;
+        
+        // Set the cursor position more reliably
         if (cursorOffset >= 0) {
           // If %CURSOR% was in the text, position cursor there
-          element.selectionStart = startPos + cursorOffset;
-          element.selectionEnd = startPos + cursorOffset;
+          element.selectionStart = exactStartPos + cursorOffset;
+          element.selectionEnd = exactStartPos + cursorOffset;
         } else {
-          // Otherwise position cursor at the end of the expanded text
-          element.selectionStart = startPos + text.length;
-          element.selectionEnd = startPos + text.length;
+          // Position cursor at the end of the expanded text
+          // Calculate based on the complete new string length and afterText length
+          element.selectionStart = newValueLength - afterText.length;
+          element.selectionEnd = newValueLength - afterText.length;
         }
         
         // Dispatch an input event to trigger any listeners on the page

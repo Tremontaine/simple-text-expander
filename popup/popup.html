@@ -45,22 +45,16 @@
       </div>
     </main>
 
-    <footer>
-      <div class="footer-actions">
-        <button class="button button-secondary" id="importBtn">
-          <span class="icon-upload"></span>
-          <span>Import</span>
-        </button>
-        <button class="button button-secondary" id="exportBtn">
-          <span class="icon-download"></span>
-          <span>Export</span>
-        </button>
-        <button class="button button-secondary" id="settingsBtn">
-          <span class="icon-settings"></span>
-          <span>Settings</span>
-        </button>
-      </div>
-    </footer>
+    <div class="footer-actions">
+      <button class="button button-secondary" id="configBtn">
+        <span class="icon-download"></span>
+        <span>Backup & Restore</span>
+      </button>
+      <button class="button button-secondary" id="settingsBtn">
+        <span class="icon-settings"></span>
+        <span>Settings</span>
+      </button>
+    </div>
 
     <!-- Add/Edit Snippet Dialog -->
     <div class="dialog-container" id="snippetDialog">
@@ -105,9 +99,6 @@
       </div>
     </div>
 
-    <!-- Import file input (hidden) -->
-    <input type="file" id="importFileInput" accept=".json" style="display: none;">
-
     <!-- Delete Confirmation Dialog -->
     <div class="dialog-container" id="deleteDialog">
       <div class="dialog">
@@ -127,6 +118,7 @@
   </div>
 
   <script src="../storage.js"></script>
+  <script src="../config-backup.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

@@ -269,8 +269,18 @@
         <h3>Organizing Snippets</h3>
         <p>You can organize your snippets using categories. To filter snippets by category, use the dropdown menu at the top of the popup.</p>
         
-        <h3>Importing and Exporting</h3>
-        <p>You can backup your snippets by clicking the "Export" button, which saves them as a JSON file. To restore your snippets or transfer them to another computer, use the "Import" button.</p>
+        <h3>Backup and Restore</h3>
+        <p>You can backup your snippets or transfer them to another computer using the Backup & Restore functionality:</p>
+        <ol>
+          <li>Click the "Backup & Restore" button at the bottom of the extension popup (or in Settings)</li>
+          <li>A dialog will appear with two tabs:
+            <ul>
+              <li><strong>Export Snippets:</strong> Copy the JSON data and save it to a file on your computer</li>
+              <li><strong>Import Snippets:</strong> Paste previously exported JSON data to restore your snippets</li>
+            </ul>
+          </li>
+        </ol>
+        <p><strong>Note:</strong> Importing will replace all your current snippets, so make sure to back up your existing snippets before importing new ones.</p>
       </div>
     </div>
     
@@ -283,6 +293,13 @@
           <li>Try refreshing the page</li>
           <li>Check that you're typing the correct shortcut followed by your trigger character</li>
           <li>Some websites may block content scripts - try a different site</li>
+        </ul>
+        
+        <h3>Issues with Backup & Restore</h3>
+        <ul>
+          <li>Make sure your JSON data is properly formatted</li>
+          <li>When copying exported data, ensure you select all the text completely</li>
+          <li>If import fails, check for syntax errors in your JSON data</li>
         </ul>
         
         <h3>Other Issues</h3>

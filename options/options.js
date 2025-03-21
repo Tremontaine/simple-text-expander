@@ -91,6 +91,11 @@ function setupEventListeners() {
   // Save settings
   document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
   
+  // Open backup & restore dialog
+  document.getElementById('configBackupBtn').addEventListener('click', function() {
+    showConfigBackupDialog();
+  });
+  
   // Limit trigger character to one character
   document.getElementById('triggerChar').addEventListener('input', function() {
     if (this.value.length > 1) {

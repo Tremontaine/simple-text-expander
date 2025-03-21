@@ -12,7 +12,7 @@ A lightweight, Material Design text expander Chrome extension that follows the K
 - Cursor positioning with `%CURSOR%` variable
 - Simple, Material Design interface
 - Organize snippets with categories
-- Import/export functionality for backups
+- Backup and restore functionality for your snippets
 - No cloud sync, keeping your data on your device
 - Privacy-focused: all data remains local
 
@@ -61,13 +61,24 @@ You can use these special variables in your snippets:
 | `%CLIPBOARD%` | Current clipboard content |
 | `%CURSOR%` | Where cursor should be placed after expansion |
 
+### Backup & Restore
+
+To safeguard your snippets or transfer them to another computer:
+
+1. Click the Text Expander icon in your Chrome toolbar
+2. Click "Backup & Restore" in the bottom menu
+3. In the dialog that appears:
+   - **Export**: Copy the displayed JSON text and save it to a file
+   - **Import**: Paste previously exported JSON data and click "Import Snippets"
+
+You can also access this functionality from the Settings page.
+
 ### Customization
 
 Access the settings page by clicking the gear icon in the extension popup or by right-clicking the extension icon and selecting "Options". You can:
 
 1. Enable/disable text expansion
-2. Enable/disable notifications
-3. Change the trigger character (default is `:`) 
+2. Change the trigger character (default is `:`) 
 
 ## Development
 
@@ -79,6 +90,7 @@ text-expander/
 ├── background.js          # Background script for expansion logic
 ├── content.js             # Content script for text detection and replacement
 ├── storage.js             # Handles snippet storage
+├── config-backup.js       # Manages backup and restore functionality
 ├── popup/                 # UI for managing snippets
 │   ├── popup.html
 │   ├── popup.js

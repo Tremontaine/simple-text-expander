@@ -50,15 +50,27 @@ chrome.runtime.onInstalled.addListener((details) => {
 // Handle messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'getClipboard') {
-    // Get clipboard text
-    navigator.clipboard.readText()
-      .then(clipboardText => {
-        sendResponse({ clipboardContent: clipboardText });
-      })
-      .catch(error => {
-        console.error('Failed to read clipboard:', error);
-        sendResponse({ error: 'Failed to read clipboard' });
+    // Try to get clipboard text with better error handling
+    try {
+      navigator.clipboard.readText()
+        .then(clipboardText => {
+          sendResponse({ clipboardContent: clipboardText || '' });
+        })
+        .catch(error => {
+          console.error('Failed to read clipboard:', error);
+          // Return a more user-friendly error
+          sendResponse({ 
+            error: 'Failed to read clipboard: ' + (error.message || 'Access denied'),
+            clipboardContent: ''
+          });
+        });
+    } catch (e) {
+      console.error('Exception accessing clipboard API:', e);
+      sendResponse({ 
+        error: 'Exception accessing clipboard: ' + (e.message || 'Unknown error'),
+        clipboardContent: ''
       });
+    }
     
     return true; // Keep the message channel open for async response
   }
