@@ -2,7 +2,7 @@
 
 A lightweight, Material Design text expander Chrome extension that follows the KISS (Keep It Simple, Stupid) principle.
 
-![Screenshot](simple-text-expander.png)
+![Screenshot](screenshots/simple-text-expander.png)
 
 ## Features
 
