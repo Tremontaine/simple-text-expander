@@ -18,8 +18,8 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_width": 350,
-    "default_height": 500
+    "default_width": 420,
+    "default_height": 600
   },
   "options_page": "options/options.html",
   "permissions": [

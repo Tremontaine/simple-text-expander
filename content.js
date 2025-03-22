@@ -529,62 +529,13 @@ function replaceInContentEditable(element, shortcutCandidate, replacement, curso
       const nodeRange = document.createRange();
       nodeRange.selectNodeContents(node);
       if (nodeRange.compareBoundaryPoints(Range.END_TO_END, range) >= 0) {
-        textNode = node;
         foundNode = true;
+        textNode = node;
         break;
       }
     }
-    
-    // If we couldn't find a suitable text node, exit early
     if (!foundNode) return;
   }
-  
-  // Now we're guaranteed to have a text node
-  const text = textNode.nodeValue || '';
-  const cursorPos = range.startOffset;
-  
-  // Find the shortcut in text before cursor
-  const searchStr = shortcutCandidate + TRIGGER_CHAR;
-  const textBeforeCursor = text.substring(0, cursorPos);
-  
-  // Find last occurrence of the shortcut before cursor
-  const shortcutPos = textBeforeCursor.lastIndexOf(searchStr);
-  if (shortcutPos === -1) return;
-  
-  try {
-    // Create range to delete the shortcut
-    const deleteRange = document.createRange();
-    deleteRange.setStart(textNode, shortcutPos);
-    deleteRange.setEnd(textNode, shortcutPos + searchStr.length);
-    
-    // Delete the shortcut
-    deleteRange.deleteContents();
-    
-    // Insert the replacement
-    const replacementNode = document.createTextNode(replacement);
-    deleteRange.insertNode(replacementNode);
-    
-    // Set cursor position
-    const newRange = document.createRange();
-    if (cursorOffset >= 0) {
-      // Position at %CURSOR% marker
-      newRange.setStart(replacementNode, cursorOffset);
-    } else {
-      // Position at end of insertion
-      newRange.setStart(replacementNode, replacement.length);
-    }
-    newRange.collapse(true);
-    
-    // Apply new selection
-    selection.removeAllRanges();
-    selection.addRange(newRange);
-    
-    // Fire input event for consistency
-    element.dispatchEvent(new Event('input', { bubbles: true }));
-  } catch (e) {
-    console.error('Error replacing text in contentEditable element:', e);
-  }
-}
   
   const text = textNode.nodeValue || '';
   const cursorPos = range.startOffset;
