@@ -4,6 +4,95 @@ let snippets = [];
 let listening = false;
 let buffer = '';
 let TRIGGER_CHAR = ':'; // Default trigger character
+let pageObserver = null;
+
+// Setup for the MutationObserver
+function setupMutationObserver() {
+  // Disconnect any existing observer first
+  if (pageObserver) {
+    pageObserver.disconnect();
+  }
+
+  pageObserver = new MutationObserver(function(mutations) {
+    // Process new iframes that might be added
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'childList') {
+        mutation.addedNodes.forEach(function(node) {
+          if (node.nodeName === 'IFRAME') {
+            try {
+              const iframeDoc = node.contentDocument || node.contentWindow?.document;
+              if (iframeDoc) {
+                iframeDoc.addEventListener('beforeinput', handleInput, true);
+                iframeDoc.addEventListener('input', handleInputFallback, true);
+                iframeDoc.addEventListener('keydown', handleKeyDown, true);
+              }
+            } catch (e) {
+              // Ignore cross-origin iframe errors
+            }
+          }
+        });
+      }
+    });
+  });
+  
+  try {
+    pageObserver.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+  } catch (e) {
+    console.error('Failed to set up mutation observer:', e);
+  }
+}
+
+// Add a cleanup function
+function cleanup() {
+  // Remove event listeners
+  document.removeEventListener('beforeinput', handleInput, true);
+  document.removeEventListener('input', handleInputFallback, true);
+  document.removeEventListener('keydown', handleKeyDown, true);
+  
+  // Disconnect the observer
+  if (pageObserver) {
+    pageObserver.disconnect();
+    pageObserver = null;
+  }
+}
+
+// Listen for when the script is about to be unloaded
+window.addEventListener('unload', cleanup);
+
+// Need to also update the settings update logic:
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'reloadSnippets') {
+    loadSnippetsAndSettings();
+    sendResponse({success: true});
+  } else if (message.action === 'settingsUpdated') {
+    // Handle settings update
+    if (message.settings) {
+      if (message.settings.enableExtension !== undefined) {
+        // Enable/disable the extension based on settings
+        if (message.settings.enableExtension) {
+          if (!listening) {
+            setupListeners();
+          }
+        } else {
+          // Remove event listeners if extension is disabled
+          if (listening) {
+            cleanup();
+            listening = false;
+          }
+        }
+      }
+      
+      if (message.settings.triggerChar) {
+        TRIGGER_CHAR = message.settings.triggerChar;
+      }
+    }
+    sendResponse({success: true});
+  }
+  return true; // Keep the message channel open for async responses
+});
 
 // Load snippets and settings from storage
 function loadSnippetsAndSettings() {
@@ -440,13 +529,62 @@ function replaceInContentEditable(element, shortcutCandidate, replacement, curso
       const nodeRange = document.createRange();
       nodeRange.selectNodeContents(node);
       if (nodeRange.compareBoundaryPoints(Range.END_TO_END, range) >= 0) {
-        foundNode = true;
         textNode = node;
+        foundNode = true;
         break;
       }
     }
+    
+    // If we couldn't find a suitable text node, exit early
     if (!foundNode) return;
   }
+  
+  // Now we're guaranteed to have a text node
+  const text = textNode.nodeValue || '';
+  const cursorPos = range.startOffset;
+  
+  // Find the shortcut in text before cursor
+  const searchStr = shortcutCandidate + TRIGGER_CHAR;
+  const textBeforeCursor = text.substring(0, cursorPos);
+  
+  // Find last occurrence of the shortcut before cursor
+  const shortcutPos = textBeforeCursor.lastIndexOf(searchStr);
+  if (shortcutPos === -1) return;
+  
+  try {
+    // Create range to delete the shortcut
+    const deleteRange = document.createRange();
+    deleteRange.setStart(textNode, shortcutPos);
+    deleteRange.setEnd(textNode, shortcutPos + searchStr.length);
+    
+    // Delete the shortcut
+    deleteRange.deleteContents();
+    
+    // Insert the replacement
+    const replacementNode = document.createTextNode(replacement);
+    deleteRange.insertNode(replacementNode);
+    
+    // Set cursor position
+    const newRange = document.createRange();
+    if (cursorOffset >= 0) {
+      // Position at %CURSOR% marker
+      newRange.setStart(replacementNode, cursorOffset);
+    } else {
+      // Position at end of insertion
+      newRange.setStart(replacementNode, replacement.length);
+    }
+    newRange.collapse(true);
+    
+    // Apply new selection
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+    
+    // Fire input event for consistency
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+  } catch (e) {
+    console.error('Error replacing text in contentEditable element:', e);
+  }
+}
   
   const text = textNode.nodeValue || '';
   const cursorPos = range.startOffset;

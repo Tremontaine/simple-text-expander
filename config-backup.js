@@ -46,9 +46,18 @@ function showConfigBackupDialog() {
     `;
     
     // Add export text area
-    const exportTextArea = document.createElement('div');
+    const exportTextArea = document.createElement('pre');
     exportTextArea.className = 'json-content';
     exportTextArea.textContent = jsonString;
+    exportTextArea.style.whiteSpace = 'pre'; // Preserve whitespace
+    exportTextArea.style.fontFamily = 'monospace';
+    exportTextArea.style.fontSize = '12px';
+    exportTextArea.style.padding = '12px';
+    exportTextArea.style.backgroundColor = '#f7f7f7';
+    exportTextArea.style.border = '1px solid var(--border-color)';
+    exportTextArea.style.borderRadius = '4px';
+    exportTextArea.style.overflow = 'auto';
+    exportTextArea.style.height = '200px';
     
     // Export buttons
     const exportButtonContainer = document.createElement('div');
@@ -181,6 +190,27 @@ function showConfigBackupDialog() {
         // Validate the imported data
         if (!Array.isArray(importedData)) {
           throw new Error('Invalid format: Data must be an array');
+        }
+        
+        // Check if each item in the array has the required properties
+        const hasInvalidSnippets = importedData.some(snippet => {
+          return (
+            typeof snippet !== 'object' ||
+            snippet === null ||
+            typeof snippet.id !== 'string' ||
+            typeof snippet.shortcut !== 'string' ||
+            typeof snippet.text !== 'string'
+          );
+        });
+        
+        if (hasInvalidSnippets) {
+          throw new Error('Invalid format: Some snippets are missing required properties (id, shortcut, text)');
+        }
+        
+        // Additional validation: Ensure no empty shortcuts
+        const hasEmptyShortcuts = importedData.some(snippet => snippet.shortcut.trim() === '');
+        if (hasEmptyShortcuts) {
+          throw new Error('Invalid format: Shortcuts cannot be empty');
         }
         
         // Store the imported snippets

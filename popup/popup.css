@@ -664,15 +664,30 @@ input:checked + .slider:before {
 
 /* Added for improved JSON display */
 .json-content {
+  white-space: pre;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 12px;
   background-color: #f7f7f7;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  padding: var(--spacing-sm);
-  font-family: monospace;
-  font-size: 12px;
+  overflow: auto;
   height: 200px;
-  overflow-y: auto;
   margin-bottom: var(--spacing-md);
+  text-align: left;
+}
+
+.json-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.json-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.json-content::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
 }
 
 /* Make placeholder text lighter */
