@@ -75,8 +75,6 @@
 
             <div class="variables-helper">
               <span>Variables:</span>
-              <button type="button" class="button variable-btn" data-variable="%DATE%">Date</button>
-              <button type="button" class="button variable-btn" data-variable="%TIME%">Time</button>
               <button type="button" class="button variable-btn" data-variable="%CLIPBOARD%">Clipboard</button>
               <button type="button" class="button variable-btn" data-variable="%CURSOR%">Cursor</button>
             </div>
@@ -111,6 +109,46 @@
           <button type="button" class="button button-primary" id="confirmDeleteBtn">
             <span class="icon-delete"></span>
             <span>Delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Dialog (New) -->
+    <div class="dialog-container" id="settingsDialog">
+      <div class="dialog">
+        <div class="dialog-title">Settings</div>
+        <div class="dialog-content">
+          <div class="form-field">
+            <label class="switch">
+              <input type="checkbox" id="enableExtension" checked>
+              <span class="slider"></span>
+            </label>
+            <label for="enableExtension">Enable text expansion</label>
+          </div>
+          
+          <div class="form-field trigger-field">
+            <label for="triggerChar">Trigger character:</label>
+            <input type="text" id="triggerChar" class="form-input trigger-input" maxlength="1" value=":" placeholder=":">
+            <div class="form-helper">Character typed after shortcut to trigger expansion</div>
+          </div>
+
+          <div class="about-section">
+            <h3>About</h3>
+            <p>Simple Text Expander v1.0</p>
+            <p>A lightweight, Material Design text expander for Chrome.</p>
+            <p class="github-link"><a href="https://github.com/Tremontaine/simple-text-expander/" target="_blank">View on GitHub</a></p>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <a href="../help/help.html" target="_blank" class="button button-secondary">
+            <span class="icon-help"></span>
+            <span>Help</span>
+          </a>
+          <button type="button" class="button button-secondary" id="cancelSettingsBtn">Cancel</button>
+          <button type="button" class="button button-primary" id="saveSettingsBtn">
+            <span class="icon-save"></span>
+            <span>Save</span>
           </button>
         </div>
       </div>

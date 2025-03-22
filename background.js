@@ -1,7 +1,7 @@
 // Background script for text expander
 
 // Load default snippets from storage.js
-// Default snippets are defined in storage.js, so we reuse them here
+// Default snippets are defined here to ensure consistency
 const DEFAULT_SNIPPETS = [
   {
     id: 'example1',
@@ -17,8 +17,14 @@ const DEFAULT_SNIPPETS = [
   },
   {
     id: 'example3',
-    shortcut: 'date',
-    text: '%DATE%',
+    shortcut: 'clip',
+    text: '%CLIPBOARD%',
+    category: 'Variables'
+  },
+  {
+    id: 'example4',
+    shortcut: 'email',
+    text: 'Please email me at %CURSOR%@example.com for further information.',
     category: 'Variables'
   }
 ];

@@ -31,6 +31,42 @@ chrome.storage.onChanged.addListener((changes, area) => {
   }
 });
 
+// Enhanced detection of editable elements
+function isEditableElement(element) {
+  if (!element) return false;
+  
+  // Check for standard editable elements
+  if (element.nodeName === 'TEXTAREA') return true;
+  
+  // Check for all valid input types that accept text
+  if (element.nodeName === 'INPUT') {
+    const validTypes = ['text', 'search', 'url', 'tel', 'email', 'number', 'password', null, ''];
+    return validTypes.includes(element.type);
+  }
+  
+  // Check for contentEditable
+  if (element.isContentEditable) return true;
+  
+  // Check for custom elements that might be editable
+  if (element.getAttribute('role') === 'textbox' || 
+      element.getAttribute('role') === 'searchbox' ||
+      element.getAttribute('contenteditable') === 'true') {
+    return true;
+  }
+  
+  // Check for shadow DOM elements
+  try {
+    if (element.shadowRoot) {
+      const activeElement = element.shadowRoot.activeElement;
+      if (activeElement) return isEditableElement(activeElement);
+    }
+  } catch (e) {
+    // Ignore errors from cross-origin shadow roots
+  }
+  
+  return false;
+}
+
 // Get clipboard content using various methods
 async function getClipboardContent() {
   // Method 1: Try the Clipboard API directly (most modern browsers)
@@ -114,40 +150,11 @@ async function getClipboardContent() {
 
 // Process special variables in the text
 async function processVariables(text) {
-  // Handle date and time variables with 24-hour time format
-  const now = new Date();
-  
-  // Format functions for date and time to ensure consistency
-  const formatDate = (date) => {
-    const options = { year: 'numeric', month: 'numeric', day: 'numeric' };
-    return date.toLocaleDateString(undefined, options);
-  };
-  
-  const formatTime = (date) => {
-    // 24-hour time format
-    const options = { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false };
-    return date.toLocaleTimeString(undefined, options);
-  };
-  
-  const formatDateTime = (date) => {
-    // 24-hour time format
-    const options = { 
-      year: 'numeric', month: 'numeric', day: 'numeric',
-      hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false 
-    };
-    return date.toLocaleString(undefined, options);
-  };
-  
-  // Replace date and time variables
-  text = text.replace(/%DATE%/g, formatDate(now));
-  text = text.replace(/%TIME%/g, formatTime(now));
-  text = text.replace(/%DATETIME%/g, formatDateTime(now));
-  
   // Handle clipboard with improved multi-method approach
   if (text.includes('%CLIPBOARD%')) {
     try {
       const clipboardContent = await getClipboardContent();
-      text = text.replace(/%CLIPBOARD%/g, clipboardContent);
+      text = text.replace(/%CLIPBOARD%/g, clipboardContent || '');
     } catch (error) {
       console.error('All clipboard access methods failed:', error);
       text = text.replace(/%CLIPBOARD%/g, '[Clipboard access failed]');
@@ -155,6 +162,23 @@ async function processVariables(text) {
   }
   
   return text;
+}
+
+// Find a shortcut match in the given text
+function findShortcutMatch(text) {
+  if (!text || !snippets || snippets.length === 0) return null;
+  
+  // Sort snippets by shortcut length (longest first) to ensure we match the longest possible shortcut
+  const sortedSnippets = [...snippets].sort((a, b) => b.shortcut.length - a.shortcut.length);
+  
+  for (const snippet of sortedSnippets) {
+    const searchStr = snippet.shortcut + TRIGGER_CHAR;
+    if (text.endsWith(searchStr)) {
+      return snippet.shortcut;
+    }
+  }
+  
+  return null;
 }
 
 // Find and expand snippet
@@ -187,118 +211,308 @@ function processCursorVariable(text) {
   };
 }
 
-// Check if an element is editable
-function isEditableElement(element) {
-  return (
-    element.nodeName === 'TEXTAREA' || 
-    element.nodeName === 'INPUT' ||
-    element.isContentEditable ||
-    (element.nodeName === 'INPUT' && 
-     ['text', 'search', 'url', 'tel', 'email'].includes(element.type))
-  );
+// Improved setup listeners function
+function setupListeners() {
+  if (listening) return;
+  
+  // Listen for multiple event types for better compatibility
+  document.addEventListener('beforeinput', handleInput, true);
+  document.addEventListener('input', handleInputFallback, true);
+  document.addEventListener('keydown', handleKeyDown, true);
+  
+  // Also handle dynamically added content
+  setupMutationObserver();
+  
+  listening = true;
 }
 
-// Handle input in editable elements
-async function handleInput(event) {
-  // Only process if event has data or is a deletion
-  if (!event.data && event.inputType !== 'deleteContentBackward') {
-    return;
+// Add a mutation observer to handle dynamically added elements
+function setupMutationObserver() {
+  const observer = new MutationObserver(function(mutations) {
+    // Process new iframes that might be added
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'childList') {
+        mutation.addedNodes.forEach(function(node) {
+          if (node.nodeName === 'IFRAME') {
+            try {
+              const iframeDoc = node.contentDocument || node.contentWindow?.document;
+              if (iframeDoc) {
+                iframeDoc.addEventListener('beforeinput', handleInput, true);
+                iframeDoc.addEventListener('input', handleInputFallback, true);
+                iframeDoc.addEventListener('keydown', handleKeyDown, true);
+              }
+            } catch (e) {
+              // Ignore cross-origin iframe errors
+            }
+          }
+        });
+      }
+    });
+  });
+  
+  try {
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+  } catch (e) {
+    console.error('Failed to set up mutation observer:', e);
   }
+}
+
+// Key down handler to track special keys
+function handleKeyDown(event) {
+  const element = event.target;
+  if (!isEditableElement(element)) return;
+  
+  // Handle special keys
+  if (event.key === 'Escape') {
+    buffer = ''; // Clear buffer on Escape key
+  } else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) {
+    // Cursor moved, we should recalculate buffer based on new position
+    buffer = ''; // For simplicity, just clear it
+  }
+}
+
+// Fallback input handler for browsers that don't support beforeinput
+function handleInputFallback(event) {
+  const element = event.target;
+  if (!isEditableElement(element)) return;
+  
+  // Only process if not already handled by beforeinput
+  if (event.alreadyProcessed) return;
+  
+  // Get current value and cursor position
+  let currentValue, cursorPosition;
+  
+  if (element.value !== undefined) {
+    // Standard input elements
+    currentValue = element.value;
+    cursorPosition = element.selectionStart;
+  } else if (element.isContentEditable) {
+    // ContentEditable elements
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+    
+    const range = selection.getRangeAt(0);
+    const textNode = range.startContainer;
+    
+    if (textNode.nodeType !== Node.TEXT_NODE) return;
+    currentValue = textNode.nodeValue;
+    cursorPosition = range.startOffset;
+  } else {
+    return; // Unsupported element type
+  }
+  
+  // Check for potential shortcut
+  if (currentValue && currentValue.slice(0, cursorPosition).endsWith(TRIGGER_CHAR)) {
+    const textBeforeCursor = currentValue.slice(0, cursorPosition);
+    
+    // FIXED: Use the findShortcutMatch function to find any matching shortcut that ends with trigger
+    const shortcutCandidate = findShortcutMatch(textBeforeCursor);
+    
+    if (shortcutCandidate) {
+      expandAndReplace(element, shortcutCandidate);
+    }
+  }
+}
+
+// Enhanced handleInput function
+async function handleInput(event) {
+  // Mark as processed to avoid duplicate handling in fallback
+  event.alreadyProcessed = true;
   
   const element = event.target;
+  if (!isEditableElement(element)) return;
   
-  // Check if element is a valid input element
-  if (!isEditableElement(element)) {
-    return;
-  }
-  
-  // Get the current cursor position
-  const cursorPos = element.selectionStart || 0;
-  
-  // Update our buffer
+  // Update buffer
   if (event.inputType === 'deleteContentBackward') {
     buffer = buffer.slice(0, -1);
   } else if (event.data) {
     buffer += event.data;
   }
   
-  // Check if the last character is the trigger
-  if (buffer.endsWith(TRIGGER_CHAR)) {
-    // Extract the potential shortcut (everything before the trigger)
-    const shortcutCandidate = buffer.slice(0, -1).split(' ').pop();
-    
-    // Try to expand the shortcut
-    const expansion = await expandSnippet(shortcutCandidate);
-    
-    if (expansion) {
-      // Prevent default only if we have a matching expansion
-      event.preventDefault();
-      
-      // Calculate the start position to replace - FIXED CALCULATION
-      const startPos = cursorPos - shortcutCandidate.length - TRIGGER_CHAR.length;
-      const exactStartPos = startPos + 1; // Add 1 to correct the off-by-one error
-      
-      if (element.value !== undefined) {
-        // Handle standard input elements
-        // Get the text before and after the shortcut
-        const beforeText = element.value.substring(0, exactStartPos);
-        const afterText = element.value.substring(cursorPos);
-        
-        // Process the expansion for cursor positioning
-        const { text, cursorOffset } = processCursorVariable(expansion);
-        
-        // Create the new value and store its length before applying
-        const newValue = beforeText + text + afterText;
-        const newValueLength = newValue.length;
-        
-        // Replace the shortcut with the expanded text
-        element.value = newValue;
-        
-        // Set the cursor position more reliably
-        if (cursorOffset >= 0) {
-          // If %CURSOR% was in the text, position cursor there
-          element.selectionStart = exactStartPos + cursorOffset;
-          element.selectionEnd = exactStartPos + cursorOffset;
-        } else {
-          // Position cursor at the end of the expanded text
-          // Calculate based on the complete new string length and afterText length
-          element.selectionStart = newValueLength - afterText.length;
-          element.selectionEnd = newValueLength - afterText.length;
-        }
-        
-        // Dispatch an input event to trigger any listeners on the page
-        element.dispatchEvent(new Event('input', { bubbles: true }));
-      } else if (element.isContentEditable) {
-        // Handle contentEditable elements (not fully implemented)
-        // This is a simplified implementation; a complete solution would require more complex DOM manipulation
-        console.log('ContentEditable expansion not yet fully supported');
-      }
-      
-      // Clear the buffer
-      buffer = '';
-    }
-  }
-  
   // Keep buffer reasonable (max 30 chars)
   if (buffer.length > 30) {
     buffer = buffer.slice(-30);
   }
+  
+  // Check if the last character is the trigger
+  if (buffer.endsWith(TRIGGER_CHAR)) {
+    // FIXED: Instead of splitting by space, use our new function to find any matching shortcut
+    const shortcutCandidate = findShortcutMatch(buffer);
+    
+    if (shortcutCandidate) {
+      // Try to expand the shortcut
+      await expandAndReplace(element, shortcutCandidate);
+    }
+  }
 }
 
-// Setup event listeners
-function setupListeners() {
-  if (listening) return;
+// Separate function for expansion and replacement logic
+async function expandAndReplace(element, shortcutCandidate) {
+  if (!shortcutCandidate) return false;
   
-  // Listen for all input events on the page
-  document.addEventListener('beforeinput', handleInput, true);
+  const expansion = await expandSnippet(shortcutCandidate);
+  if (!expansion) return false; // No matching snippet
   
-  listening = true;
+  // Process the expansion for cursor positioning
+  const { text, cursorOffset } = processCursorVariable(expansion);
+  
+  try {
+    if (element.nodeName === 'TEXTAREA' || element.nodeName === 'INPUT') {
+      // Standard input element handling
+      replaceInStandardInput(element, shortcutCandidate, text, cursorOffset);
+    } else if (element.isContentEditable) {
+      // ContentEditable handling 
+      replaceInContentEditable(element, shortcutCandidate, text, cursorOffset);
+    }
+    
+    // Clear buffer after expansion
+    buffer = '';
+    return true;
+  } catch (e) {
+    console.error('Error during text replacement:', e);
+    return false;
+  }
+}
+
+// Handle replacement in standard inputs
+function replaceInStandardInput(element, shortcutCandidate, replacement, cursorOffset) {
+  const cursorPos = element.selectionStart || 0;
+  const triggerLength = TRIGGER_CHAR.length;
+  
+  // Get the current text
+  const fullText = element.value;
+  
+  // Find the actual position of the shortcut
+  const searchStr = shortcutCandidate + TRIGGER_CHAR;
+  const searchStartPos = Math.max(0, cursorPos - searchStr.length - 10); // Look a bit further back to be safe
+  const searchEndPos = cursorPos;
+  
+  const textToSearch = fullText.substring(searchStartPos, searchEndPos);
+  const shortcutPos = textToSearch.lastIndexOf(searchStr);
+  
+  if (shortcutPos === -1) return; // Shortcut not found near cursor
+  
+  const actualStartPos = searchStartPos + shortcutPos;
+  const beforeText = fullText.substring(0, actualStartPos);
+  const afterText = fullText.substring(actualStartPos + searchStr.length);
+  
+  // Create the new value
+  const newValue = beforeText + replacement + afterText;
+  
+  // Set new value
+  element.value = newValue;
+  
+  // Set cursor position
+  if (cursorOffset >= 0) {
+    // Position at %CURSOR% marker
+    element.selectionStart = actualStartPos + cursorOffset;
+    element.selectionEnd = actualStartPos + cursorOffset;
+  } else {
+    // Position at end of expansion
+    element.selectionStart = actualStartPos + replacement.length;
+    element.selectionEnd = actualStartPos + replacement.length;
+  }
+  
+  // Notify the page about the change
+  element.dispatchEvent(new Event('input', { bubbles: true }));
+  element.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+// Improve handling of contentEditable elements
+function replaceInContentEditable(element, shortcutCandidate, replacement, cursorOffset) {
+  // Get selection and range
+  const selection = window.getSelection();
+  if (!selection.rangeCount) return;
+  
+  const range = selection.getRangeAt(0);
+  let textNode = range.startContainer;
+  
+  // Make sure we're dealing with a text node
+  if (textNode.nodeType !== Node.TEXT_NODE) {
+    // Try to find a text node near the cursor
+    let foundNode = false;
+    const treeWalker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    while (treeWalker.nextNode()) {
+      const node = treeWalker.currentNode;
+      const nodeRange = document.createRange();
+      nodeRange.selectNodeContents(node);
+      if (nodeRange.compareBoundaryPoints(Range.END_TO_END, range) >= 0) {
+        foundNode = true;
+        textNode = node;
+        break;
+      }
+    }
+    if (!foundNode) return;
+  }
+  
+  const text = textNode.nodeValue || '';
+  const cursorPos = range.startOffset;
+  
+  // Find the shortcut in text before cursor
+  const searchStr = shortcutCandidate + TRIGGER_CHAR;
+  const textBeforeCursor = text.substring(0, cursorPos);
+  
+  // Find last occurrence of the shortcut before cursor
+  const shortcutPos = textBeforeCursor.lastIndexOf(searchStr);
+  if (shortcutPos === -1) return;
+  
+  // Create range to delete the shortcut
+  const deleteRange = document.createRange();
+  deleteRange.setStart(textNode, shortcutPos);
+  deleteRange.setEnd(textNode, shortcutPos + searchStr.length);
+  
+  // Delete the shortcut
+  deleteRange.deleteContents();
+  
+  // Insert the replacement
+  const replacementNode = document.createTextNode(replacement);
+  deleteRange.insertNode(replacementNode);
+  
+  // Set cursor position
+  const newRange = document.createRange();
+  if (cursorOffset >= 0) {
+    // Position at %CURSOR% marker
+    newRange.setStart(replacementNode, cursorOffset);
+  } else {
+    // Position at end of insertion
+    newRange.setStart(replacementNode, replacement.length);
+  }
+  newRange.collapse(true);
+  
+  // Apply new selection
+  selection.removeAllRanges();
+  selection.addRange(newRange);
+  
+  // Fire input event for consistency
+  element.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 // Initialize
 function init() {
   loadSnippetsAndSettings();
   setupListeners();
+  
+  // Also attempt to handle iframes that are already on the page
+  try {
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach(iframe => {
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDoc) {
+          iframeDoc.addEventListener('beforeinput', handleInput, true);
+          iframeDoc.addEventListener('input', handleInputFallback, true);
+          iframeDoc.addEventListener('keydown', handleKeyDown, true);
+        }
+      } catch (e) {
+        // Ignore cross-origin iframe errors
+      }
+    });
+  } catch (e) {
+    console.error('Error setting up iframe listeners:', e);
+  }
 }
 
 // Start the extension
@@ -322,6 +536,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           // Remove event listeners if extension is disabled
           if (listening) {
             document.removeEventListener('beforeinput', handleInput, true);
+            document.removeEventListener('input', handleInputFallback, true);
+            document.removeEventListener('keydown', handleKeyDown, true);
             listening = false;
           }
         }

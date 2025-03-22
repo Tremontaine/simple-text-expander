@@ -170,6 +170,19 @@
       padding-bottom: var(--spacing-xl);
     }
     
+    .github-link {
+      margin-top: var(--spacing-md);
+    }
+    
+    .github-link a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    
+    .github-link a:hover {
+      text-decoration: underline;
+    }
+    
     @media (max-width: 600px) {
       .container {
         padding: var(--spacing-sm);
@@ -224,9 +237,9 @@
         <h3>Customizing the Trigger Character</h3>
         <p>You can change the trigger character (default is <code>:</code>) in the extension settings:</p>
         <ol>
-          <li>Click the gear icon in the Text Expander popup (or right-click the extension icon and select "Options")</li>
+          <li>Click the gear icon in the Text Expander popup</li>
           <li>In the "Trigger character" field, enter your preferred character</li>
-          <li>Click "Save Settings"</li>
+          <li>Click "Save"</li>
         </ol>
         <p>For example, if you change the trigger character to <code>;</code>, you would type <code>sig;</code> to expand your signature.</p>
         
@@ -238,21 +251,6 @@
             <th>Variable</th>
             <th>Description</th>
             <th>Example</th>
-          </tr>
-          <tr>
-            <td><code>%DATE%</code></td>
-            <td>Current date</td>
-            <td>3/20/2025</td>
-          </tr>
-          <tr>
-            <td><code>%TIME%</code></td>
-            <td>Current time</td>
-            <td>2:30 PM</td>
-          </tr>
-          <tr>
-            <td><code>%DATETIME%</code></td>
-            <td>Current date and time</td>
-            <td>3/20/2025, 2:30 PM</td>
           </tr>
           <tr>
             <td><code>%CLIPBOARD%</code></td>
@@ -272,7 +270,7 @@
         <h3>Backup and Restore</h3>
         <p>You can backup your snippets or transfer them to another computer using the Backup & Restore functionality:</p>
         <ol>
-          <li>Click the "Backup & Restore" button at the bottom of the extension popup (or in Settings)</li>
+          <li>Click the "Backup & Restore" button at the bottom of the extension popup</li>
           <li>A dialog will appear with two tabs:
             <ul>
               <li><strong>Export Snippets:</strong> Copy the JSON data and save it to a file on your computer</li>
@@ -324,9 +322,9 @@
           <li>The extension only requires minimal permissions to function</li>
         </ul>
         
-        <a href="../options/options.html" class="button">
-          Go to Settings
-        </a>
+        <div class="github-link">
+          <p>View the source code: <a href="https://github.com/Tremontaine/simple-text-expander/" target="_blank">GitHub Repository</a></p>
+        </div>
       </div>
     </div>
     

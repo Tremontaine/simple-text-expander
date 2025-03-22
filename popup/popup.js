@@ -297,183 +297,54 @@ function updateShortcutPreview() {
   });
 }
 
-// Export snippets with manual copy method for maximum browser compatibility
-function exportSnippets() {
-  chrome.storage.local.get('snippets', (result) => {
-    const snippets = result.snippets || [];
-    
-    // Create the JSON string with pretty formatting
-    const jsonString = JSON.stringify(snippets, null, 2);
-    
-    // Create a modal dialog for the user to copy from
-    const modalContainer = document.createElement('div');
-    modalContainer.style.position = 'fixed';
-    modalContainer.style.top = '0';
-    modalContainer.style.left = '0';
-    modalContainer.style.width = '100%';
-    modalContainer.style.height = '100%';
-    modalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    modalContainer.style.zIndex = '10000';
-    modalContainer.style.display = 'flex';
-    modalContainer.style.justifyContent = 'center';
-    modalContainer.style.alignItems = 'center';
-    
-    // Create the modal content
-    const modalContent = document.createElement('div');
-    modalContent.style.backgroundColor = '#ffffff';
-    modalContent.style.borderRadius = '8px';
-    modalContent.style.width = '80%';
-    modalContent.style.maxWidth = '600px';
-    modalContent.style.maxHeight = '80%';
-    modalContent.style.padding = '20px';
-    modalContent.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
-    modalContent.style.display = 'flex';
-    modalContent.style.flexDirection = 'column';
-    
-    // Add header
-    const header = document.createElement('div');
-    header.style.marginBottom = '15px';
-    header.innerHTML = `
-      <h3 style="margin: 0 0 10px 0; color: #6200ee; font-size: 18px;">Export Snippets</h3>
-      <p style="margin: 0; color: rgba(0, 0, 0, 0.6);">Copy this JSON data and save it to a file named "text-expander-snippets.json":</p>
-    `;
-    
-    // Add text area with the JSON content
-    const textArea = document.createElement('textarea');
-    textArea.value = jsonString;
-    textArea.style.width = '100%';
-    textArea.style.height = '200px';
-    textArea.style.marginBottom = '15px';
-    textArea.style.padding = '10px';
-    textArea.style.border = '1px solid rgba(0, 0, 0, 0.12)';
-    textArea.style.borderRadius = '4px';
-    textArea.style.fontFamily = 'monospace';
-    textArea.style.fontSize = '12px';
-    textArea.readOnly = true;
-    
-    // Add buttons
-    const buttonContainer = document.createElement('div');
-    buttonContainer.style.display = 'flex';
-    buttonContainer.style.justifyContent = 'space-between';
-    
-    const selectAllButton = document.createElement('button');
-    selectAllButton.textContent = 'Select All';
-    selectAllButton.style.padding = '8px 16px';
-    selectAllButton.style.backgroundColor = '#6200ee';
-    selectAllButton.style.color = 'white';
-    selectAllButton.style.border = 'none';
-    selectAllButton.style.borderRadius = '18px';
-    selectAllButton.style.fontWeight = '500';
-    selectAllButton.style.cursor = 'pointer';
-    
-    const copyButton = document.createElement('button');
-    copyButton.textContent = 'Copy to Clipboard';
-    copyButton.style.padding = '8px 16px';
-    copyButton.style.backgroundColor = '#6200ee';
-    copyButton.style.color = 'white';
-    copyButton.style.border = 'none';
-    copyButton.style.borderRadius = '18px';
-    copyButton.style.fontWeight = '500';
-    copyButton.style.cursor = 'pointer';
-    
-    const closeButton = document.createElement('button');
-    closeButton.textContent = 'Close';
-    closeButton.style.padding = '8px 16px';
-    closeButton.style.backgroundColor = 'transparent';
-    closeButton.style.color = '#6200ee';
-    closeButton.style.border = '1px solid #6200ee';
-    closeButton.style.borderRadius = '18px';
-    closeButton.style.fontWeight = '500';
-    closeButton.style.cursor = 'pointer';
-    
-    // Status message
-    const statusMessage = document.createElement('div');
-    statusMessage.style.marginTop = '10px';
-    statusMessage.style.textAlign = 'center';
-    statusMessage.style.color = '#4CAF50';
-    statusMessage.style.fontWeight = '500';
-    statusMessage.style.opacity = '0';
-    statusMessage.style.transition = 'opacity 0.3s';
-    
-    // Add event listeners
-    selectAllButton.addEventListener('click', () => {
-      textArea.select();
-    });
-    
-    copyButton.addEventListener('click', () => {
-      textArea.select();
-      document.execCommand('copy');
-      statusMessage.textContent = 'Copied to clipboard!';
-      statusMessage.style.opacity = '1';
-      setTimeout(() => {
-        statusMessage.style.opacity = '0';
-      }, 2000);
-    });
-    
-    closeButton.addEventListener('click', () => {
-      document.body.removeChild(modalContainer);
-    });
-    
-    // Assemble the modal
-    buttonContainer.appendChild(selectAllButton);
-    buttonContainer.appendChild(copyButton);
-    buttonContainer.appendChild(closeButton);
-    
-    modalContent.appendChild(header);
-    modalContent.appendChild(textArea);
-    modalContent.appendChild(buttonContainer);
-    modalContent.appendChild(statusMessage);
-    
-    modalContainer.appendChild(modalContent);
-    
-    // Add to document
-    document.body.appendChild(modalContainer);
-    
-    // Auto-select text for convenience
-    setTimeout(() => {
-      textArea.select();
-    }, 100);
-  });
-}
-
-// Import snippets
-function importSnippets() {
-  const fileInput = document.getElementById('importFileInput');
-  fileInput.click();
-}
-
-// Handle file selection for import
-function handleFileSelect(event) {
-  const file = event.target.files[0];
+// Open settings dialog
+function openSettingsDialog() {
+  const dialog = document.getElementById('settingsDialog');
   
-  if (file) {
-    const reader = new FileReader();
+  // Load current settings
+  chrome.storage.local.get('settings', (result) => {
+    const settings = result.settings || { enableExtension: true, triggerChar: ':' };
     
-    reader.onload = function(e) {
-      try {
-        const snippets = JSON.parse(e.target.result);
-        
-        // Validate the format
-        if (!Array.isArray(snippets)) {
-          throw new Error('Invalid format');
-        }
-        
-        // Save to storage
-        chrome.storage.local.set({ snippets }, () => {
-          // Reload the list
-          renderSnippets(snippets);
-          updateCategories(snippets);
-          
-          // Show success message
-          alert('Snippets imported successfully');
-        });
-      } catch (error) {
-        alert('Error importing snippets: ' + error.message);
-      }
-    };
-    
-    reader.readAsText(file);
+    document.getElementById('enableExtension').checked = settings.enableExtension !== false;
+    document.getElementById('triggerChar').value = settings.triggerChar || ':';
+  });
+  
+  // Show the dialog
+  dialog.style.display = 'flex';
+}
+
+// Save settings
+function saveSettings() {
+  let triggerChar = document.getElementById('triggerChar').value;
+  
+  // Make sure there's a trigger character
+  if (!triggerChar) {
+    triggerChar = ':';
+    document.getElementById('triggerChar').value = triggerChar;
   }
+  
+  const settings = {
+    enableExtension: document.getElementById('enableExtension').checked,
+    triggerChar: triggerChar
+  };
+  
+  chrome.storage.local.set({ settings }, () => {
+    // Notify content scripts about the settings change
+    chrome.tabs.query({active: true}, (tabs) => {
+      if (tabs && tabs.length > 0) {
+        tabs.forEach((tab) => {
+          try {
+            chrome.tabs.sendMessage(tab.id, { action: 'settingsUpdated', settings });
+          } catch (e) {
+            console.error('Error sending message to tab', e);
+          }
+        });
+      }
+    });
+    
+    // Close the dialog
+    closeDialog('settingsDialog');
+  });
 }
 
 // Insert a variable at the cursor position
@@ -505,6 +376,7 @@ function setupEventListeners() {
   // Cancel buttons for dialogs
   document.getElementById('cancelBtn').addEventListener('click', () => closeDialog('snippetDialog'));
   document.getElementById('cancelDeleteBtn').addEventListener('click', () => closeDialog('deleteDialog'));
+  document.getElementById('cancelSettingsBtn').addEventListener('click', () => closeDialog('settingsDialog'));
   
   // Delete snippet
   document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
@@ -516,13 +388,16 @@ function setupEventListeners() {
   
   // Open config backup/restore dialog
   document.getElementById('configBtn').addEventListener('click', function() {
-  showConfigBackupDialog();
+    showConfigBackupDialog();
   });
   
-  // Open settings
+  // Open settings dialog
   document.getElementById('settingsBtn').addEventListener('click', function() {
-    chrome.runtime.openOptionsPage();
+    openSettingsDialog();
   });
+  
+  // Save settings
+  document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
   
   // Update shortcut preview on input
   document.getElementById('shortcut').addEventListener('input', updateShortcutPreview);

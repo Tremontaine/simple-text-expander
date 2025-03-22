@@ -8,8 +8,8 @@ A lightweight, Material Design text expander Chrome extension that follows the K
 
 - Type a shortcut followed by a trigger character (default is `:`) to expand text
 - Customizable trigger character via Settings
-- Dynamic variables including date, time, and clipboard content
-- Cursor positioning with `%CURSOR%` variable
+- Clipboard content access with %CLIPBOARD% variable
+- Cursor positioning with %CURSOR% variable
 - Simple, Material Design interface
 - Organize snippets with categories
 - Backup and restore functionality for your snippets
@@ -55,11 +55,16 @@ You can use these special variables in your snippets:
 
 | Variable | Description |
 |----------|-------------|
-| `%DATE%` | Current date |
-| `%TIME%` | Current time |
-| `%DATETIME%` | Current date and time |
 | `%CLIPBOARD%` | Current clipboard content |
 | `%CURSOR%` | Where cursor should be placed after expansion |
+
+### Settings
+
+Access the settings by clicking the gear icon in the extension popup:
+
+1. Enable/disable text expansion
+2. Change the trigger character (default is `:`)
+3. View information about the extension 
 
 ### Backup & Restore
 
@@ -70,15 +75,6 @@ To safeguard your snippets or transfer them to another computer:
 3. In the dialog that appears:
    - **Export**: Copy the displayed JSON text and save it to a file
    - **Import**: Paste previously exported JSON data and click "Import Snippets"
-
-You can also access this functionality from the Settings page.
-
-### Customization
-
-Access the settings page by clicking the gear icon in the extension popup or by right-clicking the extension icon and selecting "Options". You can:
-
-1. Enable/disable text expansion
-2. Change the trigger character (default is `:`) 
 
 ## Development
 
@@ -95,7 +91,7 @@ text-expander/
 │   ├── popup.html
 │   ├── popup.js
 │   ├── popup.css
-├── options/               # Settings page
+├── options/               # Settings page (legacy)
 │   ├── options.html
 │   ├── options.js
 │   ├── options.css
@@ -136,3 +132,7 @@ This project is licensed under the MIT License.
 
 - Icons by [Alfredo Hernandez - Flaticon](https://www.flaticon.com/free-icons/text)
 - Inspired by the Material Design guidelines
+
+## Repository
+
+View the source code on [GitHub](https://github.com/Tremontaine/simple-text-expander/)

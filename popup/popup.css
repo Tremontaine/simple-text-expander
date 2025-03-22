@@ -384,3 +384,132 @@ footer {
 .icon-upload:before { content: "↑"; }
 .icon-save:before { content: "✓"; }
 .icon-folder:before { content: "📁"; }
+
+/* Settings Dialog Styles */
+.about-section {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+}
+
+.about-section h3 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-sm);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.about-section p {
+  margin: var(--spacing-xs) 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.github-link {
+  margin-top: var(--spacing-md);
+}
+
+.github-link a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+.github-link a:hover {
+  text-decoration: underline;
+}
+
+/* Icon for Help */
+.icon-help:before { 
+  content: "?"; 
+}
+
+/* Trigger input field for Settings */
+.trigger-field {
+  margin: var(--spacing-md) 0;
+}
+
+.trigger-field label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+}
+
+.trigger-input {
+  width: 60px;
+  text-align: center;
+  padding: 8px;
+  font-size: 16px;
+  margin-bottom: var(--spacing-xs);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.form-helper {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Switch toggle for enable/disable */
+.form-field {
+  display: flex;
+  align-items: center;
+  margin: var(--spacing-md) 0;
+}
+
+.form-field label {
+  margin-left: var(--spacing-md);
+  color: var(--text-primary);
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.38);
+  transition: .4s;
+  border-radius: 20px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--primary-color);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px var(--primary-color);
+}
+
+input:checked + .slider:before {
+  transform: translateX(16px);
+}
