@@ -34,7 +34,7 @@ A lightweight, Material Design text expander Chrome extension that follows the K
 
 ### Creating a Snippet
 
-1. Click the Text Expander icon in the Chrome toolbar
+1. Click the Simple Text Expander icon in the Chrome toolbar
 2. Click "Add New"
 3. Enter a shortcut (e.g., "sig")
 4. Enter the text you want it to expand to
@@ -70,7 +70,7 @@ Access the settings by clicking the gear icon in the extension popup:
 
 To safeguard your snippets or transfer them to another computer:
 
-1. Click the Text Expander icon in your Chrome toolbar
+1. Click the Simple Text Expander icon in your Chrome toolbar
 2. Click "Backup & Restore" in the bottom menu
 3. In the dialog that appears:
    - **Export**: Copy the displayed JSON text and save it to a file
@@ -114,7 +114,7 @@ Since Chrome extensions are simply a collection of files, there's no build step 
 
 ## Privacy
 
-Text Expander respects your privacy:
+Simple Text Expander respects your privacy:
 - All snippets are stored locally in your browser
 - No data is sent to any external servers
 - Your text never leaves your device
