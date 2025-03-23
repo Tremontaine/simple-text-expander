@@ -81,7 +81,7 @@ To safeguard your snippets or transfer them to another computer:
 ### Project Structure
 
 ```
-text-expander/
+simple-text-expander/
 ├── manifest.json          # Extension configuration
 ├── background.js          # Background script for expansion logic
 ├── content.js             # Content script for text detection and replacement
