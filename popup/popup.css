@@ -35,8 +35,8 @@ body {
   margin: 0;
   padding: 0;
   background-color: var(--background-color);
-  width: 420px; /* Increased from 400px */
-  height: 600px; /* Increased from 580px */
+  width: 360px;
+  height: 560px; /* Increased from 580px */
   color: var(--text-primary);
   font-size: 14px;
   line-height: 1.5;
@@ -48,6 +48,7 @@ body {
   flex-direction: column;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
 /* Header */
@@ -261,6 +262,8 @@ body {
 /* Footer */
 .footer-actions {
   display: flex;
+  position: relative;
+  margin-top: auto;
   justify-content: space-between;
   background-color: var(--surface-color);
   border-top: 1px solid var(--border-color);
@@ -707,8 +710,8 @@ input:checked + .slider:before {
 /* CSS for high-DPI screens */
 @media screen and (min-resolution: 192dpi) {
   body {
-    width: 500px; /* Even wider for high-DPI displays */
-    height: 650px; /* Taller for high-DPI displays */
+    width: 420px; /* Even wider for high-DPI displays */
+    height: 600px; /* Taller for high-DPI displays */
   }
   
   .dialog {
@@ -716,7 +719,7 @@ input:checked + .slider:before {
   }
   
   .snippet-text {
-    max-width: 360px;
+    max-width: 280px;
   }
 }
 
